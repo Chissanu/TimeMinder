@@ -9,14 +9,22 @@ class App(ctk.CTk):
         self.root.attributes("-fullscreen",True)
         self.width = 1920
         self.height = 1080
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        center_x = int(screen_width/2 - self.width / 2)
+        center_y = int(screen_height/2 - self.height / 2)
+        self.root.geometry(f'{self.width}x{self.height}+{center_x}+{center_y}')
+        self.root.resizable(0,0)
         self.root.grid_rowconfigure(0, weight=1)  # configure grid system
         self.root.grid_columnconfigure(0, weight=1)
 
         # Color Palletes
         self.mainBg = "cyan"
+        self.mainFont = "black"
+        self.timeFont = "white"
 
         # Time Range
-        self.startTime = '8:00'
+        self.startTime = '7:00'
         self.endTime = '20:00'
         self.timeList = self.split_time(self.startTime,self.endTime)
         # Key bindings
@@ -43,6 +51,8 @@ class App(ctk.CTk):
         return time_list
 
     def start_menu(self):
+        self.root.columnconfigure(0, weight=1)
+        self.root.rowconfigure(0,weight=1)
         self.startFrame = ctk.CTkFrame(master=self.root, fg_color=self.mainBg)
         self.startFrame.grid(row=0, column=0, padx=0, pady=0, sticky="nsew")
 
@@ -61,40 +71,91 @@ class App(ctk.CTk):
         self.settingBtn.grid(row=2,column=1)
 
     def setup_menu(self):
-        self.startFrame.grid_forget()
-        self.settingFrame = ctk.CTkFrame(self.root, fg_color="cyan")
-        self.settingFrame.grid(row=0, column=0, padx=0, pady=0, sticky="nsew")
-        # self.settingFrame.rowconfigure(1,weight=1)
+        def submit(state):
+            times = []
+            for btn in timeBoxes:
+                if btn.get() == "on":
+                    times.append(btn.cget("text"))
+            
+            self.tables[self.subjectEntry.get()] = times
+            
+            if state == "next":
+                self.setup_menu()
+            else:
+                print(self.tables)
+                self.main()
 
-        self.subjectLabel = ctk.CTkLabel(self.settingFrame,font=("Roboto",25),text_color="black",text="Subject Name:").grid(row=0,column=0,padx=30,pady=30)
-        self.subjectEntry = ctk.CTkEntry(self.settingFrame,width=600,font=("Roboto",25)).grid(row=0,column=1, padx=5,pady=20,columnspan=3)
+        self.startFrame.grid_forget()
+
+        self.root.grid_rowconfigure(0,weight=1)
+        self.root.grid_columnconfigure(0,weight=1)
+
+        self.settingFrame = ctk.CTkFrame(master=self.root, fg_color="cyan",width=self.width,height=300)
+        self.daysFrame = ctk.CTkFrame(master=self.root,width=self.width,height=80,fg_color="red")
+        self.timeFrame = ctk.CTkFrame(master=self.root, fg_color="grey")
+
+        # Setup grid
+        self.root.grid_rowconfigure(0,weight=1)
+        self.root.grid_columnconfigure(0,weight=3)
+        self.root.grid_rowconfigure(1,weight=1)
+        self.root.grid_rowconfigure(2,weight=10)
+
+
+        # Create days tab
+        days = ['Monday', 'Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
+        daysBtn = []
+        for count, day in enumerate(days):
+            dayBtn = ctk.CTkButton(master=self.daysFrame,font=("Roboto",25),corner_radius=0,width=self.width/7,text_color=self.mainFont,text=day)
+            daysBtn.append(dayBtn)
+            dayBtn.grid(row=0,column=count)
+
+
+        # Grid Frame
+        self.settingFrame.grid(row=0, sticky="nsew")
+        self.daysFrame.grid(row=1, sticky="nsew")
+        self.timeFrame.grid(row=2, sticky="nsew")
+
+        self.subjectLabel = ctk.CTkLabel(self.settingFrame,font=("Roboto",25),text_color=self.mainFont,text="Subject Name:").grid(row=0,column=0,padx=30,pady=10)
+        self.subjectEntry = ctk.CTkEntry(self.settingFrame,width=600,font=("Roboto",25))
+        self.subjectEntry.grid(row=0,column=1, padx=5,pady=30,columnspan=3)
         x_row = 1
         y_row = 0
+        timeBoxes = []
+
         for time in (self.timeList):
-            check_var = ctk.StringVar(value="on")
+            check_var = ctk.StringVar(value="off")
             if x_row > 10:
                 x_row = 1
                 y_row += 1
             else:
                 pass
-
-            timeBox = ctk.CTkCheckBox(self.settingFrame, text=time,variable=check_var, text_color="black", onvalue="off", offvalue="on").grid(row=x_row,column=y_row,pady=20)
+            self.timeFrame.grid_columnconfigure(y_row,weight=1)
+            timeBox = ctk.CTkCheckBox(self.timeFrame, text=time,font=("Roboto",18),variable=check_var, text_color=self.timeFont, onvalue="on", offvalue="off")
+            timeBox.grid(row=x_row,column=y_row,pady=30)
+            timeBoxes.append(timeBox)
             x_row += 1
-        #self.main()
-        self.nextBtn = ctk.CTkButton(self.settingFrame,font=("Roboto",25),text_color="black").grid(row=10,column=3)
-        print("Pressed")
+
+        self.nextBtn = ctk.CTkButton(self.timeFrame,font=("Roboto",25),text_color=self.mainFont,text="Next",command=lambda:submit("next")).grid(row=11,column=y_row - 1)
+        self.confirmBtn = ctk.CTkButton(self.timeFrame,font=("Roboto",25),text_color=self.mainFont,text="Confirm",command=lambda:submit("confirm")).grid(row=11,column=y_row)
+
     
     def main(self):
+        for screen in self.root.winfo_children():
+            screen.destroy()
+        # self.timeFrame.grid_forget()
+        # self.settingFrame.grid_forget()
         self.mainFrame = ctk.CTkFrame(master=self.root, fg_color=self.mainBg)
         self.mainFrame.grid(row=0, column=0, padx=0, pady=0, sticky="nsew")
-        
-        self.draw_table(self.mainFrame)
 
-    def draw_table(self,frame):
         days = ['Time/Day','Mon', 'Tue', 'Wed', 'Thu','Fri','Sat','Sun']
         for count, day in enumerate(days):
-            dayBox = ctk.CTkLabel(master=frame,width=self.width/8,height=150,fg_color="light grey",font=("Roboto",25),text_color="black",text=day)
+            dayBox = ctk.CTkLabel(master=self.mainFrame,width=self.width/8,height=150,fg_color="light grey",font=("Roboto",25),text_color="black",text=day)
             dayBox.grid(row=0,column=count,sticky="nsew")
+        
+        
+        # for count,time in enumerate(self.timeList):
+        #     timeBox = ctk.CTkLabel(master=self.mainFrame,height=self.height/len(self.timeList),text=time,text_color="black")
+        #     timeBox.grid(row=count+1,column=0)
 
     def exit(self,e):
         self.root.quit()
