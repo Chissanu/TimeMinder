@@ -7,3 +7,7 @@ Introducing TimeMinder, a handy Python application I've crafted with care. Its p
 * Tkinter
 * Customtkinter
 * Datetime
+
+# Contributor(s)
+
+Chissanu Kittipakorn

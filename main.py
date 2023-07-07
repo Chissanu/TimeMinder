@@ -36,6 +36,7 @@ class App(ctk.CTk):
         self.tables = {}
 
         self.start_menu()
+        #self.confirmation()
         #self.main()
 
     def split_time(self, start, end):
@@ -182,13 +183,25 @@ class App(ctk.CTk):
         for screen in self.root.winfo_children():
             screen.destroy()
         
-        self.confirmFrame = ctk.CTkFrame(master=self.root,fg_color=self.mainBg)
+        self.root.grid_rowconfigure(0, weight=len(self.tables))
+        self.root.grid_rowconfigure(1, weight=0)
+        self.root.grid_rowconfigure(2, weight=0)
+        self.root.grid_columnconfigure(0,weight=len(self.tables))
+
+        self.confirmFrame = ctk.CTkFrame(master=self.root,fg_color=self.mainBg,width=self.width,height=self.height)
         self.confirmFrame.grid(row=0,sticky="nsew")
+        index = 0
         for subject in self.tables:
-            for day in self.tables[subject]:
-                print(subject)
-                print(day)
-                print(self.tables[subject][day])
+            column = ctk.CTkLabel(self.confirmFrame,text=subject,font=("Roboto",25),fg_color="#5086de",width=self.width/len(self.tables),text_color=self.mainFont)
+            column.grid(row=0,column=index,sticky="ew")
+            row_index = 0
+            for days in self.tables[subject]:
+                for count, time in enumerate(self.tables[subject][days]):
+                    timeRow = ctk.CTkLabel(self.confirmFrame,text=time,font=("Roboto",25),text_color=self.mainFont)
+                    timeRow.grid(row=row_index+1, column=index)
+                    self.root.grid_rowconfigure(count+1,weight=1)
+                    row_index += 1
+                index += 1
         # for subject in self.tables:
         #     for day in subject:
         #         print(self.tables[subject][day])
