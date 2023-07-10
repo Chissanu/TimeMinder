@@ -24,6 +24,9 @@ class App(ctk.CTk):
         self.timeFont = "white"
         self.btnFont = "white"
         self.bodyBg = "#a7c4f2"
+        self.primaryTimeTableColor = "#c0d1eb"
+        self.secondaryTimeTableColor = "#95b9f0"
+
 
         # Time Range
         self.startTime = '7:00'
@@ -35,8 +38,8 @@ class App(ctk.CTk):
         # Subject List
         self.tables = {}
 
-        self.start_menu()
-        #self.confirmation()
+        # self.start_menu()
+        self.confirmation()
         #self.main()
 
     def split_time(self, start, end):
@@ -74,6 +77,9 @@ class App(ctk.CTk):
         self.settingBtn.grid(row=2,column=1)
 
     def setup_menu(self):
+        """
+        Save data when click next
+        """
         def submit(prevDay,today):
             times = []
 
@@ -88,14 +94,22 @@ class App(ctk.CTk):
                 if btn.get() == "on":
                     times.append(btn.cget("text"))
                     btn.deselect()
+
+            times.sort()
+            timeArray = list(set(times))
+            sorted_array = sorted(timeArray, key=lambda x: int(x.replace(':', '')))
+
             try:
-                self.tables[self.subjectEntry.get()][prevDay] = list(set(times))
+                self.tables[self.subjectEntry.get()][prevDay] = sorted_array
             except:
                 self.tables[self.subjectEntry.get()] = {}
-                self.tables[self.subjectEntry.get()][prevDay] = list(set(times))
+                self.tables[self.subjectEntry.get()][prevDay] = sorted_array
 
             loadTimeList(prevDay,today)
 
+        """
+        Save data for current day when press submit
+        """
         def saveTables(state,day):
             times = []
             for btn in timeBoxes:
@@ -103,11 +117,16 @@ class App(ctk.CTk):
                     times.append(btn.cget("text"))
                     btn.deselect()
 
+            timeArray = list(set(times))
+            sorted_array = sorted(timeArray, key=lambda x: int(x.replace(':', '')))
+
             try:
-                self.tables[self.subjectEntry.get()][day] = list(set(times))
+                self.tables[self.subjectEntry.get()][day] = sorted_array
             except:
                 self.tables[self.subjectEntry.get()] = {}
-                self.tables[self.subjectEntry.get()][day] = list(set(times))
+                self.tables[self.subjectEntry.get()][day] = sorted_array
+            
+            print(self.tables)
 
             if state == "next":
                 self.subjectEntry.delete(0, ctk.END)
@@ -191,20 +210,29 @@ class App(ctk.CTk):
         self.confirmFrame = ctk.CTkFrame(master=self.root,fg_color=self.mainBg,width=self.width,height=self.height)
         self.confirmFrame.grid(row=0,sticky="nsew")
         index = 0
+
         for subject in self.tables:
             column = ctk.CTkLabel(self.confirmFrame,text=subject,font=("Roboto",25),fg_color="#5086de",width=self.width/len(self.tables),text_color=self.mainFont)
             column.grid(row=0,column=index,sticky="ew")
             row_index = 0
-            for days in self.tables[subject]:
-                for count, time in enumerate(self.tables[subject][days]):
-                    timeRow = ctk.CTkLabel(self.confirmFrame,text=time,font=("Roboto",25),text_color=self.mainFont)
-                    timeRow.grid(row=row_index+1, column=index)
+            timeRowList = []
+            for day in self.tables[subject]:
+                for count, time in enumerate(self.tables[subject][day]):
+                    timeRow = ctk.CTkLabel(self.confirmFrame,text=day[0:3] + " " + time,font=("Roboto",25),text_color=self.mainFont)
+                    timeRow.grid(row=row_index+1, column=index,sticky="ew")
                     self.root.grid_rowconfigure(count+1,weight=1)
+                    timeRowList.append(timeRow)
                     row_index += 1
-                index += 1
-        # for subject in self.tables:
-        #     for day in subject:
-        #         print(self.tables[subject][day])
+
+                if len(self.tables[subject][day]) != 0:
+                    index += 1
+
+            
+            for count, row in enumerate(timeRowList):
+                if count % 2 == 0:
+                    row.configure(fg_color=self.primaryTimeTableColor)
+                else:
+                    row.configure(fg_color=self.secondaryTimeTableColor)
 
     
     def main(self):
