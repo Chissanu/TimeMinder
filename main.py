@@ -38,8 +38,8 @@ class App(ctk.CTk):
         # Subject List
         self.tables = {}
 
-        # self.start_menu()
-        self.confirmation()
+        self.start_menu()
+        # self.confirmation()
         #self.main()
 
     def split_time(self, start, end):
@@ -72,7 +72,7 @@ class App(ctk.CTk):
         self.startFrame.columnconfigure(2,weight=1)
 
         self.startBtn = ctk.CTkButton(self.startFrame, text="Start", command=lambda: self.setup_menu(), width=350,height=150,font=("Roboto",45))
-        self.settingBtn = ctk.CTkButton(self.startFrame, text="Setting", command=lambda: self.setup_menu(), width=350,height=150,font=("Roboto",45))
+        self.settingBtn = ctk.CTkButton(self.startFrame, text="Setting", command=lambda: self.setting(), width=350,height=150,font=("Roboto",45))
         self.startBtn.grid(row=1,column=1)
         self.settingBtn.grid(row=2,column=1)
 
@@ -126,7 +126,6 @@ class App(ctk.CTk):
                 self.tables[self.subjectEntry.get()] = {}
                 self.tables[self.subjectEntry.get()][day] = sorted_array
             
-            print(self.tables)
 
             if state == "next":
                 self.subjectEntry.delete(0, ctk.END)
@@ -207,12 +206,12 @@ class App(ctk.CTk):
         self.root.grid_rowconfigure(2, weight=0)
         self.root.grid_columnconfigure(0,weight=len(self.tables))
 
-        self.confirmFrame = ctk.CTkFrame(master=self.root,fg_color=self.mainBg,width=self.width,height=self.height)
+        self.confirmFrame = ctk.CTkScrollableFrame(master=self.root,fg_color=self.mainBg,width=self.width,height=self.height)
         self.confirmFrame.grid(row=0,sticky="nsew")
         index = 0
 
         for subject in self.tables:
-            column = ctk.CTkLabel(self.confirmFrame,text=subject,font=("Roboto",25),fg_color="#5086de",width=self.width/len(self.tables),text_color=self.mainFont)
+            column = ctk.CTkLabel(self.confirmFrame,text=subject,font=("Roboto",25),fg_color="#5086de",width=self.width/len(self.tables),height=75,text_color=self.mainFont)
             column.grid(row=0,column=index,sticky="ew")
             row_index = 0
             timeRowList = []
@@ -234,7 +233,19 @@ class App(ctk.CTk):
                 else:
                     row.configure(fg_color=self.secondaryTimeTableColor)
 
-    
+    def setting(self):
+        for screen in self.root.winfo_children():
+            screen.destroy()
+
+        self.settingFrame = ctk.CTkFrame(master=self.root, fg_color=self.mainBg)
+        self.settingFrame.grid(row=0)
+
+        self.root.grid_rowconfigure(0,weight=2)
+        
+        
+
+
+
     def main(self):
         for screen in self.root.winfo_children():
             screen.destroy()
